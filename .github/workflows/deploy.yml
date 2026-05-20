@@ -80,13 +80,13 @@ jobs:
           docker stop back-despacho || true
           docker rm back-despacho || true
           
-          # Descargar e iniciar el segundo backend saliendo por el puerto 8081
+          # Descargar e iniciar el segundo backend saliendo por el puerto 8081 hacia el host
           docker pull $ECR_REGISTRY/back-despachos:latest
           docker run -d --name back-despacho \
             -p 8081:8080 \
-            -e DB_ENDPOINT=127.0.0.1 \
+            -e DB_ENDPOINT=172.17.0.1 \
             -e DB_PORT=3306 \
             -e SPRING_DATASOURCE_USERNAME=root \
             -e SPRING_DATASOURCE_PASSWORD=mi_clave_secreta \
-            -e SPRING_DATASOURCE_URL="jdbc:mysql://127.0.0.1:3306/db_despacho?allowPublicKeyRetrieval=true&useSSL=false" \
+            -e SPRING_DATASOURCE_URL="jdbc:mysql://172.17.0.1:3306/db_despacho?allowPublicKeyRetrieval=true&useSSL=false" \
             $ECR_REGISTRY/back-despachos:latest
