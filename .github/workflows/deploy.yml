@@ -36,7 +36,7 @@ jobs:
     - name: Construir y subir Imagen a ECR
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: back-despacho
+        ECR_REPOSITORY: back-despachos
         IMAGE_TAG: latest
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
@@ -77,5 +77,5 @@ jobs:
           docker rm back-despacho || true
           
           # Descargar y levantar en el puerto 8081
-          docker pull $ECR_REGISTRY/back-despacho:latest
+          docker pull $ECR_REGISTRY/back-despachos:latest
           docker run -d --name back-despacho -p 8081:8081 $ECR_REGISTRY/back-despacho:latest
