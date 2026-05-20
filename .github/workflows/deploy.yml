@@ -1,4 +1,4 @@
-name: Deploy Backend Despachos to AWS ECR
+name: Deploy Backend Despacho to AWS ECR
 
 on:
   push:
@@ -58,15 +58,15 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
 
-    - name: Desplegar en EC2 Privada via Puente SSH
+    - name: Desplegar Despacho en EC2 Privada via Puente SSH
       uses: appleboy/ssh-action@master
       with:
-        # 1. El destino final real (La IP Privada de tu backend)
+        # 1. Destino real (Usando el secreto estándar que ya tienes configurado)
         host: ${{ secrets.AWS_EC2_PRIVATE_IP }}
         username: ec2-user
         key: ${{ secrets.AWS_SSH_KEY }}
         
-        # 2. El puente / bastión (La IP Pública de tu pasarela web)
+        # 2. El puente / bastión público
         proxy_host: ${{ secrets.AWS_EC2_IP }}
         proxy_username: ec2-user
         proxy_key: ${{ secrets.AWS_SSH_KEY }}
@@ -75,15 +75,17 @@ jobs:
         envs_format: tomal
         script: |
           export ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
-          
-          # Autenticación nativa en ECR dentro de la máquina privada
           aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY
           
-          # Limpieza absoluta para asegurar los 20 GB de espacio
-          docker stop back-despachos || true
-          docker rm back-despachos || true
-          docker system prune -af --volumes || true
+          docker stop back-despacho || true
+          docker rm back-despacho || true
           
-          # Descargar e iniciar el contenedor en la máquina correcta
+          # Apuntamos a 'localhost' porque la BD está en la misma máquina
           docker pull $ECR_REGISTRY/back-despachos:latest
-          docker run -d --name back-despachos -p 8080:8080 $ECR_REGISTRY/back-despachos:latest
+          docker run -d --name back-despacho \
+            -p 8081:8081 \
+            -e DB_ENDPOINT=localhost \
+            -e DB_PORT=3306 \
+            -e SPRING_DATASOURCE_USERNAME=root \
+            -e SPRING_DATASOURCE_PASSWORD=mi_clave_secreta \
+            $ECR_REGISTRY/back-despachos:latest
