@@ -81,10 +81,11 @@ jobs:
           docker rm back-despacho || true
           
           # Apuntamos a 'localhost' porque la BD está en la misma máquina
+          # Descargar nueva imagen levantando en el puerto 8081 y apuntando a la IP de la red Docker
           docker pull $ECR_REGISTRY/back-despachos:latest
           docker run -d --name back-despacho \
             -p 8081:8081 \
-            -e DB_ENDPOINT=localhost \
+            -e DB_ENDPOINT=172.17.0.1 \
             -e DB_PORT=3306 \
             -e SPRING_DATASOURCE_USERNAME=root \
             -e SPRING_DATASOURCE_PASSWORD=mi_clave_secreta \
