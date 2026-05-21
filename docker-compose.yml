@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  mysql-despacho:
+    image: mysql:8.0
+    container_name: mysql-despacho
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: mi_clave_secreta
+      MYSQL_DATABASE: db_despacho
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  back-ventas:
+    image: 574854859818.dkr.ecr.us-east-1.amazonaws.com/back-ventas:latest
+    container_name: back-ventas
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_ENDPOINT=mysql-despacho
+      - DB_PORT=3306
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=mi_clave_secreta
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-despacho:3306/db_despacho?allowPublicKeyRetrieval=true&useSSL=false
+    depends_on:
+      - mysql-despacho
+
+  back-despacho:
+    image: 574854859818.dkr.ecr.us-east-1.amazonaws.com/back-despachos:latest
+    container_name: back-despacho
+    restart: always
+    ports:
+      - "8081:8080"
+    environment:
+      - DB_ENDPOINT=mysql-despacho
+      - DB_PORT=3306
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=mi_clave_secreta
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-despacho:3306/db_despacho?allowPublicKeyRetrieval=true&useSSL=false
+    depends_on:
+      - mysql-despacho
+volumes:
+  mysql_data:
